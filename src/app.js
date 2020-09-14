@@ -1,68 +1,77 @@
-// import the module
 import { http } from './http';
 import { ui } from './ui';
 
-// get posts on DOM load
+// Get posts on DOM load
 document.addEventListener('DOMContentLoaded', getPosts);
 
-// Listen for add Post
+// Listen for add post
 document.querySelector('.post-submit').addEventListener('click', submitPost);
 
-// Listen for delete Post
+// Listen for delete
 document.querySelector('#posts').addEventListener('click', deletePost);
+
+// Listen for edit state
+document.querySelector('#posts').addEventListener('click', enableEdit);
 
 // Get Posts
 function getPosts() {
-  http
-    .get('http://localhost:3000/posts')
-    .then((data) => ui.showPosts(data))
-    //.then((data) => console.log(data))
-    .catch((err) => console.log(err));
+  http.get('http://localhost:3000/posts')
+    .then(data => ui.showPosts(data))
+    .catch(err => console.log(err));
 }
 
 // Submit Post
 function submitPost() {
-  // get form data
   const title = document.querySelector('#title').value;
   const body = document.querySelector('#body').value;
 
-  // change data to object literal
   const data = {
     title,
-    body,
-  };
+    body
+  }
 
   // Create Post
-  http
-    .post('http://localhost:3000/posts', data)
-    .then((data) => {
-      ui.showAlert('Post Added', 'alert alert-success');
+  http.post('http://localhost:3000/posts', data)
+    .then(data => {
+      ui.showAlert('Post added', 'alert alert-success');
       ui.clearFields();
       getPosts();
     })
-    .catch((err) => console.log(err));
+    .catch(err => console.log(err));
 }
 
 // Delete Post
 function deletePost(e) {
-  e.preventDefault();
-  // check event
-  if (e.target.parentElement.classList.contains('delete')) {
-    // get id
+  if(e.target.parentElement.classList.contains('delete')) {
     const id = e.target.parentElement.dataset.id;
-    // prompt alert
-    if (confirm('Are you sure?')) {
-      // delete the post
-      http
-        .delete(`http://localhost:3000/posts/${id}`)
-        .then((data) => {
-          // show success msg
-          ui.showAlert('Post Removed', 'alert alert-success');
-          // display remaining post
+    if(confirm('Are you sure?')) {
+      http.delete(`http://localhost:3000/posts/${id}`)
+        .then(data => {
+          ui.showAlert('Post removed', 'alert alert-success');
           getPosts();
         })
-        // catch eror if any
-        .catch((err) => console.log(err));
+        .catch(err => console.log(err));
     }
   }
+  e.preventDefault();
+}
+
+// Enable Edit State
+function enableEdit(e) {
+  if(e.target.parentElement.classList.contains('edit')) {
+    const id = e.target.parentElement.dataset.id;
+    const title = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
+    const body = e.target.parentElement.previousElementSibling.textContent;
+    
+    const data = {
+      id,
+      title,
+      body
+    }
+
+    // Fill form with current post
+    ui.fillForm(data);
+  }
+  
+  e.preventDefault();
 }
